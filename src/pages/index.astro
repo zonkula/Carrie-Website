@@ -1,0 +1,146 @@
+---
+import { getCollection } from 'astro:content';
+import { Picture } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import { site } from '../site.config';
+
+// Hero: the first painting marked `featured: true` in src/data/paintings.yaml.
+const paintings = await getCollection('paintings');
+const hero = paintings.find((p) => p.data.featured) ?? paintings[0];
+if (!hero) throw new Error('Homepage needs at least one painting in src/data/paintings.yaml');
+
+const { title, year, medium, price, status, alt, images, dimensions } = hero.data;
+const statusLabel = { available: null, sold: 'Sold', reserved: 'Reserved' }[status];
+const priceLabel = `$${price.toLocaleString('en-US')}`;
+const size = `${dimensions.height} × ${dimensions.width} in`;
+---
+
+<Base>
+  <header class="site-header fade-in">
+    <a class="name" href="/">{site.name}</a>
+  </header>
+
+  <main class="home">
+    <figure class="hero fade-in" style="--delay: 0.2s">
+      <Picture
+        src={images.main}
+        alt={alt}
+        formats={['avif', 'webp']}
+        widths={[480, 800, 1200, 1600, 2000].filter((w) => w <= images.main.width)}
+        sizes="(min-width: 64rem) 56rem, calc(100vw - 2rem)"
+        loading="eager"
+        fetchpriority="high"
+      />
+      <figcaption>
+        <span class="title">{title}</span>, {year}{' '}
+        <span class="sep" aria-hidden="true">·</span>{' '}
+        {medium}, <span class="nowrap">{size}</span>{' '}
+        <span class="sep" aria-hidden="true">·</span>{' '}
+        <span class="nowrap">{statusLabel ?? priceLabel}</span>
+      </figcaption>
+    </figure>
+
+    <section class="intro fade-in" style="--delay: 0.9s">
+      <h1 class="visually-hidden">{site.name}</h1>
+      <p class="line">{site.intro}</p>
+      <a class="cta" href="/gallery">View the gallery</a>
+    </section>
+  </main>
+</Base>
+
+<style>
+  .site-header {
+    padding: var(--space-3) var(--gutter);
+    text-align: center;
+  }
+
+  .name {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.5rem;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+  }
+
+  .home {
+    padding: 0 var(--gutter) var(--space-5);
+  }
+
+  .hero {
+    margin: var(--space-2) auto 0;
+    max-width: 56rem;
+  }
+
+  /* Never crop the painting: scale it to fit, keep its proportions. */
+  /* Height leaves room for the caption, intro and link on first view. */
+  .hero :global(img) {
+    width: 100%;
+    max-height: max(16rem, calc(100svh - 23rem));
+    object-fit: contain;
+    margin: 0 auto;
+  }
+
+  figcaption {
+    margin-top: var(--space-2);
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* Never split "30 × 24 in" or a price across lines. */
+  .nowrap {
+    white-space: nowrap;
+  }
+
+  .title {
+    font-style: italic;
+    color: var(--text);
+  }
+
+  .sep {
+    margin: 0 0.1em;
+  }
+
+  .intro {
+    margin: var(--space-4) auto 0;
+    max-width: 32rem;
+    text-align: center;
+  }
+
+  .line {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    line-height: 1.35;
+    text-wrap: balance;
+  }
+
+  /* Clear but quiet: a text link with a hairline, sized for a thumb. */
+  .cta {
+    display: inline-block;
+    margin-top: var(--space-4);
+    padding: 0.85rem 1.75rem;
+    border: 1px solid var(--text);
+    font-size: 0.8125rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background-color 0.6s var(--ease), color 0.6s var(--ease);
+  }
+
+  .cta:hover {
+    background: var(--text);
+    color: var(--bg);
+  }
+
+  @media (min-width: 48rem) {
+    .name {
+      font-size: 1.75rem;
+    }
+
+    .line {
+      font-size: 1.875rem;
+    }
+  }
+</style>
