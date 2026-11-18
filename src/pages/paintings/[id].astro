@@ -3,6 +3,7 @@ import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import { Picture } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
+import RoomMockup from '../../components/RoomMockup.astro';
 import { formatPrice, formatSize, statusLabel } from '../../lib/format';
 
 export async function getStaticPaths() {
@@ -30,6 +31,15 @@ interface Props {
 const { painting, prev, next } = Astro.props;
 const { title, year, medium, dimensions, framed, frame, note, alt, price, status, images } = painting.data;
 const series = await getEntry(painting.data.series);
+
+// Rooms for the true-scale mockup: the painting's own choice (up to 2), else the default room.
+// Only the first is shown for now; the rest are ready for a room switcher.
+const defaultRoom = (await getCollection('rooms')).sort((a, b) => a.data.order - b.data.order)[0];
+const rooms = painting.data.rooms
+  ? (await Promise.all(painting.data.rooms.map((r) => getEntry(r)))).filter((r) => r !== undefined)
+  : defaultRoom
+    ? [defaultRoom]
+    : [];
 
 const views = [
   { image: images.main, alt, label: `View ${title} at full size` },
@@ -78,6 +88,15 @@ const widths = (max: number) => [480, 800, 1200, 1600, 2000].filter((w) => w <= 
         ))
       }
       <p class="hint">Tap or click an image to see it at full resolution.</p>
+
+      {
+        rooms[0] && (
+          <div class="in-room">
+            <h2 class="in-room-title">In a room</h2>
+            <RoomMockup room={rooms[0]} painting={painting} />
+          </div>
+        )
+      }
     </section>
 
     <section class="details fade-in" style="--delay: 0.6s">
@@ -376,6 +395,23 @@ const widths = (max: number) => [480, 800, 1200, 1600, 2000].filter((w) => w <= 
     margin: 0;
     text-align: center;
     font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  /* ---------- True-scale room mockup ---------- */
+  .in-room {
+    grid-column: 1 / -1;
+    margin-top: var(--space-4);
+  }
+
+  .in-room-title {
+    margin: 0 0 var(--space-2);
+    text-align: center;
+    font-family: var(--font-ui);
+    font-weight: 400;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--muted);
   }
 

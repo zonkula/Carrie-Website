@@ -1,0 +1,33 @@
+# Rooms for the true-scale mockup on each painting page.
+# The lowest `order` is the default room. Paintings can pick up to two rooms with `rooms:` in paintings.yaml.
+#
+# To add a room from a real photo (wall shot straight on, camera level, lens parallel to the wall):
+#   1. Put the photo in src/assets/rooms/.
+#   2. pixelsPerInch: measure something on (or right against) the wall whose real size you know,
+#      e.g. a sofa 84 in wide that spans 1176 px in the photo: 1176 / 84 = 14.
+#      Furniture standing in front of the wall looks slightly bigger than the wall itself, so
+#      something flat on the wall (a door, a frame, an outlet plate 4.5 in tall) is most accurate.
+#   3. floorY: the pixel row (counting down from the top of the photo) where the wall meets the floor.
+#   4. centerX: the pixel column where the painting should be centred, e.g. the middle of the sofa.
+#   5. furnitureTop: height in inches of the furniture top under the painting (sofa back, console),
+#      or 0 for a bare wall. Paintings hang at least 8 in above it.
+# Any image editor shows pixel positions under the cursor (Photoshop, GIMP, Photopea, Preview's inspector).
+
+- id: living-room
+  title: "Living room"
+  order: 1
+  image: ../assets/rooms/living-room.jpg   # 1188 x 880, generated from the original illustrated room
+  #
+  # Calibration: the sofa is treated as 84 in wide, the same as the illustration this image was made from.
+  # The layout matches the illustration within 1-2% (sofa width, centre, floor line), but the furniture
+  # is drawn a little taller relative to its width, so the scale is a close match, not an exact one.
+  #   - Sofa: 571 px wide / 84 in = 6.8 px/in at the sofa.
+  #   - The wall is slightly behind the sofa, so it appears a little smaller. The camera is level
+  #     (horizon at the middle row, 440): (797 - 440) / (813 - 440) = 0.96, so 6.5 px/in on the wall.
+  #   - Check at that scale: seat 20.6 in, back 36 in, side table 25 in, baseboard 5 in.
+  #     All inside normal furniture ranges.
+  pixelsPerInch: 6.5
+  floorY: 797      # where the wall meets the floor (bottom of the baseboard)
+  centerX: 599     # middle of the sofa
+  furnitureTop: 36 # sofa back, inches
+  scaleNote: "Sofa is 84 in wide"

@@ -70,7 +70,10 @@ Follows the setup order in SPEC.md.
 
 ### SPEC.md iteration one, not yet built
 
-- [ ] **Room mockups:** each painting at true scale on a living room wall, plus a second room or wall color where possible. The `rooms` image field already exists in the data.
+- [ ] **Room scale is a close match, not exact.** The room image was generated from the illustration, so its sofa is treated as 84 in wide (6.5 px/in on the wall). Its layout matches the illustration within 1–2%, but the furniture is drawn a little taller than in the illustration. Revisit if a real, measured room photo is used later.
+- [ ] (Optional) A higher-resolution version of the room photo. It is 1188 px wide, which looks slightly soft on large high-density screens.
+- [ ] **Second room** (different room or wall color) in `rooms.yaml`, then a **room switcher** on the painting page. The data already supports up to 2 rooms per painting (`rooms:` in `paintings.yaml`).
+- [ ] Decide what to do for paintings too large for the room's visible wall (currently cut off at the photo edge, with a build warning).
 - [ ] **Print options selector** on the painting page and **print checkout**. _Blocked by the print fulfilment decision._
 - [ ] Decide whether series need their own pages. Today each series is a section of the gallery with its intro.
 
@@ -104,3 +107,6 @@ Follows the setup order in SPEC.md.
 - [x] Header navigation, footer with email signup on every page.
 - [x] Forms wired to Resend and Buttondown, switched on by environment variables.
 - [x] All work committed and pushed to GitHub (2026-11-18).
+- [x] True-scale room mockup on painting pages (2026-11-18).
+- [x] Room is now the realistic living room image generated from the illustration (no canvas on the wall), calibrated to an 84 in sofa at 6.5 px per inch (2026-11-18).
+- [x] Room mockup work committed and pushed (2026-11-18).

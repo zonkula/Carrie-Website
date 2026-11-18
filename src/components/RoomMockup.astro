@@ -1,0 +1,81 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import { placeOnWall } from '../lib/room';
+import { formatSize } from '../lib/format';
+
+interface Props {
+  room: CollectionEntry<'rooms'>;
+  painting: CollectionEntry<'paintings'>;
+}
+
+const { room, painting } = Astro.props;
+const { data } = painting;
+const spot = placeOnWall(room.data, data.dimensions);
+if (spot.overflows) {
+  console.warn(`[room] "${painting.id}" is larger than the visible wall in room "${room.id}"; it will be cut off.`);
+}
+
+// The painting is only a fraction of the mockup's width, so it needs far fewer pixels.
+const mockupSizes = '(min-width: 64rem) 58vw, calc(100vw - 2rem)';
+const share = spot.widthShare.toFixed(3);
+const paintingSizes = `(min-width: 64rem) calc(58vw * ${share}), calc((100vw - 2rem) * ${share})`;
+const paintingPx = (w: number) => Math.ceil(w * spot.widthShare);
+---
+
+<figure class="room" data-room={room.id}>
+  <div class="scene">
+    <Image
+      src={room.data.image}
+      alt=""
+      widths={[640, 960, 1280, 1920].filter((w) => w <= room.data.image.width)}
+      sizes={mockupSizes}
+      loading="lazy"
+      class="wall"
+    />
+    <Image
+      src={data.images.main}
+      alt={`${data.title} shown to scale on a wall in a ${room.data.title.toLowerCase()}`}
+      widths={[...new Set([640, 1280, 1920, 2560].map(paintingPx))].filter((w) => w <= data.images.main.width)}
+      sizes={paintingSizes}
+      loading="lazy"
+      class="art"
+      style={`left:${spot.left};top:${spot.top};width:${spot.width};height:${spot.height}`}
+    />
+  </div>
+  <figcaption>
+    Shown to scale: {formatSize(data.dimensions)}. {room.data.scaleNote}.
+  </figcaption>
+</figure>
+
+<style>
+  .room {
+    margin: 0;
+  }
+
+  .scene {
+    position: relative;
+    overflow: hidden; /* a very large painting is cut off at the photo edge, not spilling out */
+  }
+
+  .scene :global(.wall) {
+    width: 100%;
+    height: auto;
+  }
+
+  /* The painting, hung on the wall: a soft shadow below and to one side, as if lit from above. */
+  .scene :global(.art) {
+    position: absolute;
+    object-fit: cover;
+    box-shadow:
+      0 0.15em 0.3em rgb(0 0 0 / 0.18),
+      0.2em 0.6em 1.2em rgb(0 0 0 / 0.14);
+  }
+
+  figcaption {
+    margin-top: var(--space-1);
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+</style>

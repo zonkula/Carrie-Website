@@ -16,6 +16,26 @@ const series = defineCollection({
 });
 
 /**
+ * Rooms for the true-scale mockup on painting pages. Each room image is "calibrated":
+ * we know how many image pixels equal one inch on its wall.
+ * Data: src/data/rooms.yaml (see the comments there for how to measure a new room photo)
+ */
+const rooms = defineCollection({
+  loader: file('src/data/rooms.yaml'),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(), // e.g. "Living room", shown on the future room switcher
+      order: z.number().int(), // the lowest is the default room
+      image: image(),
+      pixelsPerInch: z.number().positive(), // image pixels per real inch, measured on the wall plane
+      floorY: z.number().nonnegative(), // pixel row (from the top) where the wall meets the floor
+      centerX: z.number().nonnegative(), // pixel column the painting is centred on
+      furnitureTop: z.number().nonnegative().default(0), // inches: top of furniture under the painting (0 = none)
+      scaleNote: z.string(), // tells visitors what the reference object is, e.g. "Sofa is 84 in wide"
+    }),
+});
+
+/**
  * Paintings. One entry per original. The YAML `id` becomes the URL slug.
  * Data: src/data/paintings.yaml
  * Image paths are relative to the YAML file, e.g. ../assets/paintings/<id>/main.jpg
@@ -49,8 +69,11 @@ const paintings = defineCollection({
         images: z.object({
           main: image(),
           closeups: z.array(image()).max(2).default([]), // texture close-ups
-          rooms: z.array(image()).default([]), // room-scale mockups
         }),
+
+        // Rooms for the true-scale mockup, from rooms.yaml. Optional: leave it out to use the
+        // default room. A second room is for the room switcher (not built yet).
+        rooms: z.array(reference('rooms')).min(1).max(2).optional(),
 
         // Hosted checkout link for the original (Stripe Payment Link). Empty until Stripe is set up.
         checkout: z.url().optional(),
@@ -78,4 +101,4 @@ const paintings = defineCollection({
       }),
 });
 
-export const collections = { series, paintings };
+export const collections = { series, rooms, paintings };

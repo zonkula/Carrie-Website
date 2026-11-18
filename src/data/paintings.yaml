@@ -11,7 +11,10 @@
 # price:       whole US dollars, always shown
 # status:      available | sold | reserved
 # featured:    true to include in the home page hero rotation
-# images:      main (required), closeups (up to 2), rooms (room mockups)
+# images:      main (required), closeups (up to 2)
+# rooms:       optional. Up to 2 room ids from rooms.yaml for the true-scale mockup,
+#              e.g. [living-room] or [living-room, bedroom]. Leave out to use the default room.
+#              The painting is placed on the wall automatically from its dimensions.
 # checkout:    Stripe Payment Link for the original (add once Stripe is set up)
 # prints:      optional. edition: open | limited (limited needs editionSize)
 #              options: list of { size, paper, price, checkout }
@@ -32,8 +35,7 @@
     main: ../assets/paintings/placeholder-painting-one/main.jpg
     closeups:
       - ../assets/paintings/placeholder-painting-one/closeup-1.jpg
-    rooms:
-      - ../assets/paintings/placeholder-painting-one/room-1.jpg
+  rooms: [living-room]
   prints:
     edition: limited
     editionSize: 50
