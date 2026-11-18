@@ -5,6 +5,7 @@ import Base from '../../layouts/Base.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import RoomMockup from '../../components/RoomMockup.astro';
 import { formatPrice, formatSize, statusLabel } from '../../lib/format';
+import { paintingShareText } from '../../lib/share';
 
 export async function getStaticPaths() {
   const paintings = await getCollection('paintings');
@@ -53,7 +54,11 @@ const views = [
 const widths = (max: number) => [480, 800, 1200, 1600, 2000].filter((w) => w <= max);
 ---
 
-<Base title={title} description={`${title}, ${year}. ${medium}, ${formatSize(dimensions)}. ${note}`}>
+<Base
+  title={title}
+  description={`${title}, ${year}. ${medium}, ${formatSize(dimensions)}. ${note}`}
+  share={{ ...paintingShareText(painting.data), paintingId: painting.id, imageAlt: alt, price, available: status === 'available' }}
+>
   <SiteHeader />
 
   <main class="painting">

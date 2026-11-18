@@ -2,18 +2,32 @@
 import { defineConfig, envField } from 'astro/config';
 import node from '@astrojs/node';
 
+// Read .env (if present) so SITE_URL can be set there as well as in the host's settings.
+try {
+  process.loadEnvFile();
+} catch {
+  // no .env file: fine
+}
+
+// The site's public address, e.g. https://example.com. REQUIRED before launch:
+//   - link previews (texts, social posts) need full image and page URLs
+//   - the server only trusts this domain, so Stripe sends buyers back to the right place
+const SITE_URL = process.env.SITE_URL || undefined;
+const siteHost = SITE_URL ? new URL(SITE_URL) : undefined;
+
 // https://docs.astro.build/en/reference/configuration-reference/
 export default defineConfig({
-  // Set to the real domain before launch (used for link preview cards and sitemap).
-  // site: 'https://example.com',
+  site: SITE_URL,
 
-  // Pages are prebuilt as static HTML. Only /api/checkout runs on the server.
+  // Pages are prebuilt as static HTML. Only the /api/ endpoints run on the server.
   // Swap this adapter for the host's (Vercel, Netlify, ...) when deploying.
   adapter: node({ mode: 'standalone' }),
 
-  // REQUIRED before launch: Astro only trusts the Host header for these domains.
-  // Without it, server requests see "localhost", and Stripe would send buyers back there.
-  // security: { allowedDomains: [{ hostname: 'example.com', protocol: 'https' }] },
+  // Astro only trusts the Host header for these domains. Without one, server requests see
+  // "localhost", and Stripe would send buyers back there.
+  security: siteHost
+    ? { allowedDomains: [{ hostname: siteHost.hostname, protocol: siteHost.protocol.replace(':', '') }] }
+    : {},
 
   env: {
     schema: {

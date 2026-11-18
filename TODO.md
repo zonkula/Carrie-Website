@@ -58,7 +58,8 @@ Follows the setup order in SPEC.md.
 
 ### Before launch
 
-- [ ] Set `site` and uncomment `security.allowedDomains` in `astro.config.mjs` with the real domain. Without it, Stripe sends buyers back to `localhost`.
+- [ ] Set `SITE_URL` (e.g. `https://herdomain.com`) in the host's environment settings. One setting covers both link previews (full image and page URLs) and the trusted domain for Stripe's return links. Without it, previews and Stripe both point at `localhost`.
+- [ ] After launch, test link previews for real: run `npm run check:share -- https://herdomain.com/paintings/<id>/`, paste a painting link into opengraph.xyz and the Facebook Sharing Debugger, and text a link to a phone.
 - [ ] **Stripe webhook to mark originals sold automatically** after payment. Needs a place to store status outside `paintings.yaml`. Until then, set `status: sold` by hand after each sale.
 - [ ] Add shipping rates to Stripe Checkout once decided (and international countries, if any).
 - [ ] Switch to live Stripe keys: deliberately remove the test-only check in `src/pages/api/checkout.ts`.
@@ -79,7 +80,6 @@ Follows the setup order in SPEC.md.
 
 ### SPEC.md next round
 
-- [ ] Link preview cards (shows the painting, title and price when shared).
 - [ ] Scale visualizer (wall size, sofa or person silhouette).
 - [ ] Room switcher.
 - [ ] Frame preview for prints.
@@ -110,3 +110,5 @@ Follows the setup order in SPEC.md.
 - [x] True-scale room mockup on painting pages (2026-11-18).
 - [x] Room is now the realistic living room image generated from the illustration (no canvas on the wall), calibrated to an 84 in sofa at 6.5 px per inch (2026-11-18).
 - [x] Room mockup work committed and pushed (2026-11-18).
+- [x] Link previews on every page: painting pages show that painting with title, price and status. Other pages show the featured painting with its title and price. Cards are 1200 × 630, whole painting uncropped. `npm run check:share` checks a page (2026-11-18).
+- [x] Link preview work committed and pushed (2026-11-18).
