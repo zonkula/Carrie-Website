@@ -22,3 +22,8 @@ npm-debug.log*
 Thumbs.db
 .vscode/*
 !.vscode/extensions.json
+
+# added by `vercel link` (.env.local holds a Vercel access token)
+.vercel
+.env*
+!.env.example
