@@ -49,8 +49,9 @@ Follows the setup order in SPEC.md.
 - [ ] **Stripe** account tied to the business bank account. Put the test key in `.env` (`STRIPE_SECRET_KEY`).
 - [ ] Decide on Stripe Tax (0.5% per transaction) or handle tax another way.
 - [ ] Buy a domain.
-- [ ] **Deploy to Vercel:** import the GitHub repo in Vercel and add `STRIPE_SECRET_KEY` (test key) in its Environment Variables. The code side is done: the Vercel adapter is used automatically when building on Vercel.
-- [ ] Run through `TESTING.md` on a real iPhone and Android phone before showing her.
+- [ ] Run through `TESTING.md` on a real iPhone and Android phone before showing her. Live at https://carrie-website.vercel.app
+- [ ] **Stripe account is OBC Consulting's sandbox.** Checkout shows "OBC Consulting sandbox" as the seller. Before launch, use keys from **her** Stripe account (business name, bank account, branding), replacing `STRIPE_SECRET_KEY` in Vercel.
+- [ ] (Optional) Also tick **Preview** for `STRIPE_SECRET_KEY` in Vercel, so preview deployments of branches can check out too (currently Production only).
 - [ ] When a custom domain is added in Vercel, also set `SITE_URL` to it (e.g. `https://herdomain.com`) and redeploy.
 - [ ] `npm audit` reports a known regex issue in a package `@astrojs/vercel` uses at build time (`path-to-regexp` via `@vercel/routing-utils`). It isn't used for live requests. npm's suggested fix downgrades the adapter to a version without Astro 7 support. Recheck when `@astrojs/vercel` updates.
 - [ ] **Resend** account, verify the domain, then set `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`.
@@ -116,3 +117,4 @@ Follows the setup order in SPEC.md.
 - [x] Link previews on every page: painting pages show that painting with title, price and status. Other pages show the featured painting with its title and price. Cards are 1200 × 630, whole painting uncropped. `npm run check:share` checks a page (2026-11-18).
 - [x] Link preview work committed and pushed (2026-11-18).
 - [x] Vercel support (adapter, automatic site address and trusted domains) and `TESTING.md` phone checklist, committed and pushed (2026-11-18).
+- [x] Deployed to Vercel (project `carrie-website`, team OBC Consulting), auto-deploys from `main`. Live at https://carrie-website.vercel.app. All pages load, link previews pass, and Buy creates a Stripe test checkout (2026-11-18).
