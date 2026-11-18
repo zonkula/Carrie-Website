@@ -46,11 +46,9 @@ Follows the setup order in SPEC.md.
 - [ ] Confirm her state and register the business.
 - [ ] Seller's / sales tax permit; confirm sales tax rules for fine art with the state or an accountant.
 - [ ] Business bank account.
-- [ ] **Stripe** account tied to the business bank account. Put the test key in `.env` (`STRIPE_SECRET_KEY`).
+- [ ] **Her own Stripe account**, tied to her business bank account. Checkout currently shows "OBC Consulting sandbox" as the seller. Swap `STRIPE_SECRET_KEY` in Vercel for her account's test key, then later her live key.
 - [ ] Decide on Stripe Tax (0.5% per transaction) or handle tax another way.
 - [ ] Buy a domain.
-- [ ] Run through `TESTING.md` on a real iPhone and Android phone before showing her. Live at https://carrie-website.vercel.app
-- [ ] **Stripe account is OBC Consulting's sandbox.** Checkout shows "OBC Consulting sandbox" as the seller. Before launch, use keys from **her** Stripe account (business name, bank account, branding), replacing `STRIPE_SECRET_KEY` in Vercel.
 - [ ] (Optional) Also tick **Preview** for `STRIPE_SECRET_KEY` in Vercel, so preview deployments of branches can check out too (currently Production only).
 - [ ] When a custom domain is added in Vercel, also set `SITE_URL` to it (e.g. `https://herdomain.com`) and redeploy.
 - [ ] `npm audit` reports a known regex issue in a package `@astrojs/vercel` uses at build time (`path-to-regexp` via `@vercel/routing-utils`). It isn't used for live requests. npm's suggested fix downgrades the adapter to a version without Astro 7 support. Recheck when `@astrojs/vercel` updates.
@@ -67,7 +65,6 @@ Follows the setup order in SPEC.md.
 - [ ] **Stripe webhook to mark originals sold automatically** after payment. Needs a place to store status outside `paintings.yaml`. Until then, set `status: sold` by hand after each sale.
 - [ ] Add shipping rates to Stripe Checkout once decided (and international countries, if any).
 - [ ] Switch to live Stripe keys: deliberately remove the test-only check in `src/pages/api/checkout.ts`.
-- [ ] Run a full test purchase with the Stripe test card (`4242 4242 4242 4242`).
 - [ ] Send a real test message and signup once Resend and Buttondown keys are set. Both were only tested with fake keys.
 - [ ] Place one real order before launch (SPEC.md setup step 8).
 - [ ] Favicon and `robots.txt`.
@@ -85,7 +82,6 @@ Follows the setup order in SPEC.md.
 ### SPEC.md next round
 
 - [ ] Scale visualizer (wall size, sofa or person silhouette).
-- [ ] Room switcher.
 - [ ] Frame preview for prints.
 - [ ] Palette-aware page backgrounds.
 - [ ] Swipe and arrow-key browsing between paintings (previous/next links exist; add gestures and keys).
@@ -118,3 +114,4 @@ Follows the setup order in SPEC.md.
 - [x] Link preview work committed and pushed (2026-11-18).
 - [x] Vercel support (adapter, automatic site address and trusted domains) and `TESTING.md` phone checklist, committed and pushed (2026-11-18).
 - [x] Deployed to Vercel (project `carrie-website`, team OBC Consulting), auto-deploys from `main`. Live at https://carrie-website.vercel.app. All pages load, link previews pass, and Buy creates a Stripe test checkout (2026-11-18).
+- [x] Phone test (`TESTING.md`) passed on a real phone, including a full Stripe test purchase (2026-11-18).
