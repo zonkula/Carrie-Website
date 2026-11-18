@@ -91,10 +91,6 @@ Follows the setup order in SPEC.md.
 - [ ] Testimonials and exhibitions.
 - [ ] Blur-up image placeholders.
 
-## Housekeeping
-
-- [ ] Commit and push all work since the first setup commit (homepage, painting page, gallery, About, Contact, Shop, Policies, navigation, forms).
-
 ---
 
 ## Done
@@ -107,3 +103,4 @@ Follows the setup order in SPEC.md.
 - [x] Shop page (originals; prints with prices, ordering "opens soon") and Policies page (draft).
 - [x] Header navigation, footer with email signup on every page.
 - [x] Forms wired to Resend and Buttondown, switched on by environment variables.
+- [x] All work committed and pushed to GitHub (2026-11-18).
