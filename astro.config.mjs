@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig, envField } from 'astro/config';
 import node from '@astrojs/node';
+import vercel from '@astrojs/vercel';
 
 // Read .env (if present) so SITE_URL can be set there as well as in the host's settings.
 try {
@@ -9,24 +10,39 @@ try {
   // no .env file: fine
 }
 
-// The site's public address, e.g. https://example.com. REQUIRED before launch:
+// Building on Vercel? Vercel sets these automatically (System Environment Variables).
+const onVercel = Boolean(process.env.VERCEL);
+const https = (host) => (host ? `https://${host}` : undefined);
+const vercelUrls = [
+  https(process.env.VERCEL_PROJECT_PRODUCTION_URL), // e.g. carrie-website.vercel.app or the custom domain
+  https(process.env.VERCEL_BRANCH_URL), // e.g. carrie-website-git-main-<team>.vercel.app
+  https(process.env.VERCEL_URL), // this exact deployment
+].filter(Boolean);
+
+// The site's public address, e.g. https://example.com.
 //   - link previews (texts, social posts) need full image and page URLs
-//   - the server only trusts this domain, so Stripe sends buyers back to the right place
-const SITE_URL = process.env.SITE_URL || undefined;
-const siteHost = SITE_URL ? new URL(SITE_URL) : undefined;
+//   - the server only trusts known domains, so Stripe sends buyers back to the right place
+// SITE_URL wins if set (use it for a custom domain). On Vercel, production uses the production
+// address and preview deployments use their own address.
+const SITE_URL =
+  process.env.SITE_URL ||
+  (process.env.VERCEL_ENV === 'production' ? vercelUrls[0] : https(process.env.VERCEL_URL)) ||
+  undefined;
+
+// Every address the site can be reached at. Astro only trusts the Host header for these; without
+// one, server requests see "localhost", and Stripe would send buyers back there.
+const trusted = [...new Set([SITE_URL, ...vercelUrls].filter(Boolean))].map((u) => new URL(u));
 
 // https://docs.astro.build/en/reference/configuration-reference/
 export default defineConfig({
   site: SITE_URL,
 
   // Pages are prebuilt as static HTML. Only the /api/ endpoints run on the server.
-  // Swap this adapter for the host's (Vercel, Netlify, ...) when deploying.
-  adapter: node({ mode: 'standalone' }),
+  // On Vercel they become serverless functions; locally they run on a small Node server.
+  adapter: onVercel ? vercel() : node({ mode: 'standalone' }),
 
-  // Astro only trusts the Host header for these domains. Without one, server requests see
-  // "localhost", and Stripe would send buyers back there.
-  security: siteHost
-    ? { allowedDomains: [{ hostname: siteHost.hostname, protocol: siteHost.protocol.replace(':', '') }] }
+  security: trusted.length
+    ? { allowedDomains: trusted.map((u) => ({ hostname: u.hostname, protocol: u.protocol.replace(':', '') })) }
     : {},
 
   env: {

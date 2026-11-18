@@ -49,7 +49,10 @@ Follows the setup order in SPEC.md.
 - [ ] **Stripe** account tied to the business bank account. Put the test key in `.env` (`STRIPE_SECRET_KEY`).
 - [ ] Decide on Stripe Tax (0.5% per transaction) or handle tax another way.
 - [ ] Buy a domain.
-- [ ] Choose a host (Vercel, Netlify, a Node server, ...) and swap the Node adapter in `astro.config.mjs` for the host's.
+- [ ] **Deploy to Vercel:** import the GitHub repo in Vercel and add `STRIPE_SECRET_KEY` (test key) in its Environment Variables. The code side is done: the Vercel adapter is used automatically when building on Vercel.
+- [ ] Run through `TESTING.md` on a real iPhone and Android phone before showing her.
+- [ ] When a custom domain is added in Vercel, also set `SITE_URL` to it (e.g. `https://herdomain.com`) and redeploy.
+- [ ] `npm audit` reports a known regex issue in a package `@astrojs/vercel` uses at build time (`path-to-regexp` via `@vercel/routing-utils`). It isn't used for live requests. npm's suggested fix downgrades the adapter to a version without Astro 7 support. Recheck when `@astrojs/vercel` updates.
 - [ ] **Resend** account, verify the domain, then set `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`.
 - [ ] **Buttondown** account, then set `BUTTONDOWN_API_KEY`. Check whether double opt-in is on; if so, change the signup message to "check your inbox to confirm".
 - [ ] Order sample prints of her own paintings from the chosen printer and compare color against the originals.
@@ -58,7 +61,7 @@ Follows the setup order in SPEC.md.
 
 ### Before launch
 
-- [ ] Set `SITE_URL` (e.g. `https://herdomain.com`) in the host's environment settings. One setting covers both link previews (full image and page URLs) and the trusted domain for Stripe's return links. Without it, previews and Stripe both point at `localhost`.
+- [ ] Site address: on Vercel's own `.vercel.app` address it is detected automatically. For a custom domain, set `SITE_URL` (see the Vercel item above).
 - [ ] After launch, test link previews for real: run `npm run check:share -- https://herdomain.com/paintings/<id>/`, paste a painting link into opengraph.xyz and the Facebook Sharing Debugger, and text a link to a phone.
 - [ ] **Stripe webhook to mark originals sold automatically** after payment. Needs a place to store status outside `paintings.yaml`. Until then, set `status: sold` by hand after each sale.
 - [ ] Add shipping rates to Stripe Checkout once decided (and international countries, if any).
@@ -112,3 +115,4 @@ Follows the setup order in SPEC.md.
 - [x] Room mockup work committed and pushed (2026-11-18).
 - [x] Link previews on every page: painting pages show that painting with title, price and status. Other pages show the featured painting with its title and price. Cards are 1200 × 630, whole painting uncropped. `npm run check:share` checks a page (2026-11-18).
 - [x] Link preview work committed and pushed (2026-11-18).
+- [x] Vercel support (adapter, automatic site address and trusted domains) and `TESTING.md` phone checklist, committed and pushed (2026-11-18).
