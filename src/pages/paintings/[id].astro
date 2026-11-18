@@ -1,0 +1,517 @@
+---
+import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
+import { Picture } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import { formatPrice, formatSize, statusLabel } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const paintings = await getCollection('paintings');
+  return paintings.map((painting) => ({ params: { id: painting.id }, props: { painting } }));
+}
+
+interface Props {
+  painting: CollectionEntry<'paintings'>;
+}
+
+const { painting } = Astro.props;
+const { title, year, medium, dimensions, framed, frame, note, alt, price, status, images } = painting.data;
+const series = await getEntry(painting.data.series);
+
+const views = [
+  { image: images.main, alt, label: `View ${title} at full size` },
+  ...images.closeups.map((image, i) => ({
+    image,
+    alt: `Close-up detail ${i + 1} of ${title}, showing brushwork and texture`,
+    label: `View close-up ${i + 1} at full size`,
+  })),
+];
+
+const widths = (max: number) => [480, 800, 1200, 1600, 2000].filter((w) => w <= max);
+---
+
+<Base title={title} description={`${title}, ${year}. ${medium}, ${formatSize(dimensions)}. ${note}`}>
+  <SiteHeader />
+
+  <main class="painting">
+    <div class="notice" role="status" hidden data-checkout-notice></div>
+
+    <section class="media fade-in" style="--delay: 0.15s" aria-label="Images">
+      {
+        views.map(({ image, alt, label }, i) => (
+          <button
+            type="button"
+            class:list={['zoomable', i === 0 ? 'main' : 'closeup']}
+            data-full={image.src}
+            data-alt={alt}
+            aria-label={label}
+          >
+            <Picture
+              src={image}
+              alt={alt}
+              formats={['avif', 'webp']}
+              widths={widths(image.width)}
+              sizes={i === 0 ? '(min-width: 64rem) 58vw, calc(100vw - 2rem)' : '(min-width: 64rem) 28vw, calc(50vw - 1.5rem)'}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              fetchpriority={i === 0 ? 'high' : 'auto'}
+            />
+          </button>
+        ))
+      }
+      <p class="hint">Tap or click an image to see it at full resolution.</p>
+    </section>
+
+    <section class="details fade-in" style="--delay: 0.6s">
+      <h1 class="title">{title}</h1>
+      <p class="year">{year}</p>
+
+      <dl class="facts">
+        <div><dt>Medium</dt><dd>{medium}</dd></div>
+        <div><dt>Size</dt><dd>{formatSize(dimensions)}</dd></div>
+        <div><dt>Framing</dt><dd>{framed ? (frame ? `Framed: ${frame}` : 'Framed') : 'Unframed'}</dd></div>
+        {series && <div><dt>Series</dt><dd>{series.data.title}</dd></div>}
+      </dl>
+
+      <p class="note">{note}</p>
+
+      <div class:list={['purchase', status]}>
+        <p class="price-line">
+          <span class="price">{formatPrice(price)}</span>
+          <span class="status">
+            {status !== 'available' && <span class="dot" aria-hidden="true" />}
+            {statusLabel[status]}
+          </span>
+        </p>
+
+        {
+          status === 'available' && (
+            <form method="post" action="/api/checkout" data-buy-form>
+              <input type="hidden" name="painting" value={painting.id} />
+              <button type="submit" class="buy">Buy the original</button>
+            </form>
+          )
+        }
+        {status === 'reserved' && <p class="aside">This painting is on hold for a buyer.</p>}
+        {status === 'sold' && <p class="aside">This painting has found a home.</p>}
+
+        <p class="aside">Original, one of one. Includes a signed certificate of authenticity. Ships insured, with tracking.</p>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="viewer" aria-label="Full-resolution view" data-viewer>
+    <div class="viewer-stage" data-stage>
+      <img alt="" data-viewer-img draggable="false" />
+    </div>
+    <button type="button" class="viewer-close" data-close>Close</button>
+    <p class="viewer-hint" data-viewer-hint>Tap the painting to zoom in</p>
+  </dialog>
+</Base>
+
+<script>
+  // ----- Checkout messages (?checkout=success|cancelled|unavailable|error) -----
+  const messages: Record<string, string> = {
+    success: 'Thank you. Your purchase is complete and a receipt is on its way to your email.',
+    cancelled: 'Checkout was cancelled. Nothing was charged.',
+    unavailable: 'Sorry, this painting is no longer available.',
+    error: 'Checkout is not available right now. Please try again in a moment.',
+  };
+  const params = new URLSearchParams(location.search);
+  const state = params.get('checkout');
+  const notice = document.querySelector<HTMLElement>('[data-checkout-notice]');
+  if (state && messages[state] && notice) {
+    notice.textContent = messages[state];
+    notice.dataset.state = state;
+    notice.hidden = false;
+    params.delete('checkout');
+    history.replaceState(null, '', location.pathname + (params.size ? `?${params}` : ''));
+  }
+
+  // Prevent double submits while Stripe loads.
+  document.querySelector<HTMLFormElement>('[data-buy-form]')?.addEventListener('submit', (e) => {
+    const button = (e.currentTarget as HTMLFormElement).querySelector('button');
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Opening checkout…';
+    }
+  });
+  // Re-enable if the visitor comes back with the browser's back button.
+  addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    const button = document.querySelector<HTMLButtonElement>('[data-buy-form] button');
+    if (button) {
+      button.disabled = false;
+      button.textContent = 'Buy the original';
+    }
+  });
+
+  // ----- Click-to-zoom viewer -----
+  const viewer = document.querySelector<HTMLDialogElement>('[data-viewer]')!;
+  const stage = viewer.querySelector<HTMLElement>('[data-stage]')!;
+  const img = viewer.querySelector<HTMLImageElement>('[data-viewer-img]')!;
+  const hint = viewer.querySelector<HTMLElement>('[data-viewer-hint]')!;
+  let zoomed = false;
+
+  function setZoom(on: boolean, clientX?: number, clientY?: number) {
+    // Where in the image the visitor tapped, as a fraction, so we zoom toward that spot.
+    const rect = img.getBoundingClientRect();
+    const fx = clientX === undefined ? 0.5 : (clientX - rect.left) / rect.width;
+    const fy = clientY === undefined ? 0.5 : (clientY - rect.top) / rect.height;
+
+    zoomed = on;
+    viewer.classList.toggle('is-zoomed', on);
+    if (on) {
+      // One image pixel per device pixel, but always at least twice the fitted size.
+      const width = Math.max(img.naturalWidth / devicePixelRatio, rect.width * 2);
+      img.style.width = `${width}px`;
+      const height = width * (img.naturalHeight / img.naturalWidth);
+      stage.scrollLeft = fx * width - stage.clientWidth / 2;
+      stage.scrollTop = fy * height - stage.clientHeight / 2;
+    } else {
+      img.style.width = '';
+    }
+    hint.textContent = on ? 'Drag to look around. Tap to zoom out.' : 'Tap the painting to zoom in';
+  }
+
+  function open(button: HTMLButtonElement) {
+    const preview = button.querySelector('img');
+    // Show the already-loaded preview instantly, then swap in the full-resolution file.
+    img.src = preview?.currentSrc || button.dataset.full!;
+    img.alt = button.dataset.alt ?? '';
+    const full = new Image();
+    full.onload = () => {
+      if (viewer.open) img.src = full.src;
+    };
+    full.src = button.dataset.full!;
+
+    setZoom(false);
+    viewer.showModal();
+    document.documentElement.classList.add('viewer-open');
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('.zoomable').forEach((b) => b.addEventListener('click', () => open(b)));
+  viewer.querySelector('[data-close]')!.addEventListener('click', () => viewer.close());
+  viewer.addEventListener('close', () => {
+    document.documentElement.classList.remove('viewer-open');
+    img.removeAttribute('src');
+  });
+
+  // Mouse drag to pan when zoomed (touch and trackpads scroll natively).
+  let drag: { x: number; y: number; left: number; top: number; moved: boolean } | null = null;
+  stage.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    drag = { x: e.clientX, y: e.clientY, left: stage.scrollLeft, top: stage.scrollTop, moved: false };
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!drag || !zoomed) return;
+    const dx = e.clientX - drag.x;
+    const dy = e.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
+    stage.scrollLeft = drag.left - dx;
+    stage.scrollTop = drag.top - dy;
+  });
+  addEventListener('pointerup', () => setTimeout(() => (drag = null)));
+
+  stage.addEventListener('click', (e) => {
+    if (drag?.moved) return; // that was a pan, not a tap
+    if (e.target === img) setZoom(!zoomed, e.clientX, e.clientY);
+    else if (!zoomed) viewer.close(); // tap outside the painting closes
+  });
+</script>
+
+<style>
+  .painting {
+    padding: 0 var(--gutter) var(--space-5);
+    max-width: 90rem;
+    margin: 0 auto;
+  }
+
+  /* ---------- Images ---------- */
+  .media {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+    align-items: start;
+  }
+
+  .zoomable {
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+  }
+
+  .zoomable.main {
+    grid-column: 1 / -1;
+  }
+
+  /* Never crop the painting. */
+  .zoomable :global(img) {
+    width: 100%;
+    object-fit: contain;
+  }
+
+  .main :global(img) {
+    max-height: 80svh;
+    margin: 0 auto;
+  }
+
+  /* Close-ups are crops by nature, so a square tile is fine. */
+  .closeup :global(img) {
+    aspect-ratio: 1;
+    object-fit: cover;
+  }
+
+  .hint {
+    grid-column: 1 / -1;
+    margin: 0;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  /* ---------- Details ---------- */
+  .details {
+    max-width: 34rem;
+    margin: var(--space-4) auto 0;
+  }
+
+  .title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 2.25rem;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  .year {
+    margin: var(--space-1) 0 0;
+    color: var(--muted);
+  }
+
+  .facts {
+    margin: var(--space-3) 0 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .facts div {
+    display: grid;
+    grid-template-columns: 6rem 1fr;
+    gap: var(--space-2);
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 0.9375rem;
+  }
+
+  .facts dt {
+    color: var(--muted);
+  }
+
+  .facts dd {
+    margin: 0;
+  }
+
+  .note {
+    margin: var(--space-3) 0 0;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    line-height: 1.5;
+  }
+
+  .purchase {
+    margin-top: var(--space-4);
+  }
+
+  .price-line {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .price {
+    font-size: 1.5rem;
+    letter-spacing: 0.01em;
+  }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* The gallery red dot: the traditional mark for a sold (or held) piece. */
+  .dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--sold);
+  }
+
+  .reserved .dot {
+    background: none;
+    box-shadow: inset 0 0 0 1.5px var(--sold);
+  }
+
+  .sold .price {
+    color: var(--muted);
+  }
+
+  .buy {
+    width: 100%;
+    margin-top: var(--space-3);
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--text);
+    background: var(--text);
+    color: var(--bg);
+    font: inherit;
+    font-size: 0.8125rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.6s var(--ease), color 0.6s var(--ease);
+  }
+
+  .buy:hover {
+    background: transparent;
+    color: var(--text);
+  }
+
+  .buy:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  .aside {
+    margin: var(--space-2) 0 0;
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+
+  /* Shown after returning from checkout. Sits at the top so it's seen first. */
+  .notice {
+    grid-column: 1 / -1;
+    max-width: 40rem;
+    margin: 0 auto var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--rule);
+    text-align: center;
+    font-size: 0.9375rem;
+    animation: fade-in var(--fade) var(--ease) both;
+  }
+
+  .notice[hidden] {
+    display: none;
+  }
+
+  /* ---------- Wide screens: image left, details right ---------- */
+  @media (min-width: 64rem) {
+    .painting {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: var(--space-5);
+      align-items: start;
+      padding-top: var(--space-2);
+    }
+
+    .main :global(img) {
+      max-height: calc(100vh - 9rem);
+    }
+
+    .details {
+      position: sticky;
+      top: var(--space-4);
+      margin: 0;
+    }
+
+    .title {
+      font-size: 2.75rem;
+    }
+  }
+
+  /* ---------- Full-resolution viewer ---------- */
+  .viewer {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .viewer[open] {
+    animation: fade-in 0.6s var(--ease) both;
+  }
+
+  .viewer::backdrop {
+    background: var(--bg);
+  }
+
+  .viewer-stage {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    display: grid;
+    place-items: center;
+    padding: 3.5rem var(--gutter);
+    overscroll-behavior: contain;
+  }
+
+  .viewer-stage img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    cursor: zoom-in;
+    user-select: none;
+  }
+
+  .viewer.is-zoomed .viewer-stage {
+    display: block;
+    padding: 0;
+  }
+
+  .viewer.is-zoomed .viewer-stage img {
+    max-width: none;
+    max-height: none;
+    cursor: grab;
+  }
+
+  .viewer-close {
+    position: fixed;
+    top: var(--space-2);
+    right: var(--gutter);
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--rule);
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .viewer-hint {
+    position: fixed;
+    bottom: var(--space-2);
+    left: 0;
+    right: 0;
+    margin: 0;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  :global(html.viewer-open) {
+    overflow: hidden;
+  }
+</style>

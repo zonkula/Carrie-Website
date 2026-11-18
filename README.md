@@ -20,6 +20,17 @@ npm run build    # production build into dist/
 
 Series and their intros live in `src/data/series.yaml`. The schema for both files is in `src/content.config.ts`.
 
+## Stripe (test mode)
+
+The Buy button on a painting page creates a Stripe Checkout session on the server (`src/pages/api/checkout.ts`).
+
+1. Copy `.env.example` to `.env` (gitignored) and paste the **test** secret key from the Stripe dashboard.
+2. `npm run dev`, open a painting marked `available`, and click Buy. Pay with Stripe's test card `4242 4242 4242 4242`, any future date and any CVC.
+
+The endpoint refuses live keys for now. Prices always come from `paintings.yaml`, never from the browser.
+
+**Not done yet:** a paid painting is not marked sold automatically. Until the Stripe webhook is added, change its `status` to `sold` in `paintings.yaml` by hand. Before launch, set `security.allowedDomains` in `astro.config.mjs` (see the comment there).
+
 ## High-res masters
 
 Keep print masters in `masters/` (gitignored) or another backed-up location. They never go in the repo.

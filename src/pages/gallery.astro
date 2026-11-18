@@ -1,0 +1,332 @@
+---
+import { getCollection } from 'astro:content';
+import { Picture, Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { formatPrice, formatSize, statusLabel } from '../lib/format';
+
+// Series in their `order`; paintings in the order they appear in paintings.yaml.
+const allSeries = (await getCollection('series')).sort((a, b) => a.data.order - b.data.order);
+const paintings = await getCollection('paintings');
+
+const groups = allSeries
+  .map((series) => ({ series, works: paintings.filter((p) => p.data.series.id === series.id) }))
+  .filter((g) => g.works.length > 0);
+
+const widths = (max: number) => [400, 600, 800, 1200].filter((w) => w <= max);
+const sizes = '(min-width: 64rem) 30vw, (min-width: 40rem) 45vw, calc(100vw - 2rem)';
+---
+
+<Base title="Gallery" description="Current paintings, grouped by series. Sold work stays visible.">
+  <SiteHeader />
+
+  <main class="gallery">
+    <header class="page-head fade-in">
+      <h1>Gallery</h1>
+      {
+        groups.length > 1 && (
+          <nav aria-label="Series">
+            <ul class="series-nav">
+              {groups.map(({ series }) => (
+                <li>
+                  <a href={`#${series.id}`}>{series.data.title}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+    </header>
+
+    {
+      groups.map(({ series, works }, i) => (
+        <section class="series fade-in" id={series.id} style={`--delay: ${0.2 + i * 0.15}s`} aria-labelledby={`${series.id}-title`}>
+          <div class="series-head">
+            <h2 id={`${series.id}-title`}>{series.data.title}</h2>
+            <p class="intro">{series.data.intro}</p>
+          </div>
+
+          <ul class="grid">
+            {works.map(({ id, data }) => {
+              const main = data.images.main;
+              const closeup = data.images.closeups[0];
+              return (
+                <li class:list={['card', data.status]}>
+                  <a href={`/paintings/${id}/`} class="card-link">
+                    {/* The frame is the same shape for every card; the painting sits inside it, never cropped. */}
+                    <div class="frame">
+                      <div class="art" style={`--ar: ${main.width / main.height}`}>
+                        <Picture src={main} alt={data.alt} formats={['avif', 'webp']} widths={widths(main.width)} sizes={sizes} loading="lazy" />
+                        {closeup && (
+                          <Image
+                            class="closeup"
+                            src={closeup}
+                            alt=""
+                            aria-hidden="true"
+                            widths={widths(closeup.width)}
+                            sizes={sizes}
+                            loading="lazy"
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <p class="caption">
+                      <span class="title">{data.title}</span>
+                      <span class="meta">{formatSize(data.dimensions)}</span>
+                      <span class="meta">
+                        {formatPrice(data.price)}
+                        {data.status !== 'available' && (
+                          <span class="status">
+                            <span class="dot" aria-hidden="true" />
+                            {statusLabel[data.status]}
+                          </span>
+                        )}
+                      </span>
+                    </p>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))
+    }
+  </main>
+</Base>
+
+<style>
+  .gallery {
+    max-width: 90rem;
+    margin: 0 auto;
+    padding: 0 var(--gutter) var(--space-5);
+  }
+
+  /* ---------- Page head ---------- */
+  .page-head {
+    text-align: center;
+    margin: var(--space-2) 0 var(--space-4);
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 2.25rem;
+    line-height: 1.1;
+  }
+
+  .series-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-1) var(--space-3);
+    margin: var(--space-2) 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .series-nav a {
+    display: inline-block;
+    padding: 0.5rem 0; /* comfortable tap target */
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.6s var(--ease);
+  }
+
+  .series-nav a:hover {
+    color: var(--text);
+  }
+
+  /* Series links glide to their section. Skipped if the visitor prefers reduced motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html) {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* ---------- Series ---------- */
+  .series {
+    scroll-margin-top: var(--space-3);
+  }
+
+  .series + .series {
+    margin-top: var(--space-5);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--rule);
+  }
+
+  .series-head {
+    max-width: 36rem;
+    margin: 0 auto var(--space-4);
+    text-align: center;
+  }
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+
+  .intro {
+    margin: var(--space-2) 0 0;
+    font-family: var(--font-display);
+    font-size: 1.1875rem;
+    line-height: 1.5;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  /*
+    Grid: 1 column on phones, 2 on tablets, 3 on desktop.
+    Flex rather than CSS grid so a short last row is centred, like a hang on a wall.
+  */
+  .grid {
+    --gap: var(--space-4);
+    --cols: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-5) var(--gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .card {
+    flex: 0 0 calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
+    min-width: 0;
+  }
+
+  @media (min-width: 40rem) {
+    .grid {
+      --cols: 2;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .grid {
+      --cols: 3;
+      --gap: var(--space-5);
+    }
+  }
+
+  .card-link {
+    display: block;
+    text-decoration: none;
+  }
+
+  /*
+    Phones (one column): the painting at its own proportions, capped so a tall piece
+    still fits on screen. Never cropped.
+  */
+  .frame {
+    container-type: inline-size;
+    display: flex;
+    justify-content: center;
+  }
+
+  .art {
+    position: relative;
+    width: min(100cqw, calc(75svh * var(--ar)));
+    aspect-ratio: var(--ar);
+  }
+
+  /*
+    Two or more columns: a same-shaped frame for every card so rows line up. The painting
+    is sized to fit inside it (like object-fit: contain), resting on the bottom edge.
+  */
+  @media (min-width: 40rem) {
+    .frame {
+      aspect-ratio: 4 / 5;
+      align-items: flex-end;
+    }
+
+    .art {
+      width: min(100cqw, calc(125cqw * var(--ar)));
+    }
+  }
+
+  .art :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* Close-up on hover: desktop only. Hidden (and not downloaded) on touch screens. */
+  .art :global(.closeup) {
+    display: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .art :global(.closeup) {
+      display: block;
+      position: absolute;
+      inset: 0;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.9s var(--ease);
+    }
+
+    .card-link:hover .art :global(.closeup),
+    .card-link:focus-visible .art :global(.closeup) {
+      opacity: 1;
+    }
+  }
+
+  /* ---------- Caption ---------- */
+  .caption {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    margin: var(--space-2) 0 0;
+    text-align: center;
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+
+  .title {
+    font-family: var(--font-display);
+    font-size: 1.1875rem;
+    font-style: italic;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color 0.6s var(--ease);
+  }
+
+  .card-link:hover .title {
+    text-decoration-color: var(--rule);
+  }
+
+  .meta {
+    color: var(--muted);
+  }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    margin-left: 0.6em;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Same red-dot convention as the painting page. */
+  .dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--sold);
+  }
+
+  .reserved .dot {
+    background: none;
+    box-shadow: inset 0 0 0 1.5px var(--sold);
+  }
+</style>

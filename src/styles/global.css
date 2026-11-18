@@ -7,6 +7,7 @@
   --text: #1c1c1b;
   --muted: #6f6f6b;
   --rule: #dcdcd8;
+  --sold: #b0372b; /* the gallery red dot, used only to mark sold/reserved work */
 
   --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   --font-ui: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;

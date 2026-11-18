@@ -2,7 +2,9 @@
 import { getCollection } from 'astro:content';
 import { Picture } from 'astro:assets';
 import Base from '../layouts/Base.astro';
+import SiteHeader from '../components/SiteHeader.astro';
 import { site } from '../site.config';
+import { formatPrice, formatSize, statusLabel } from '../lib/format';
 
 // Hero: the first painting marked `featured: true` in src/data/paintings.yaml.
 const paintings = await getCollection('paintings');
@@ -10,19 +12,15 @@ const hero = paintings.find((p) => p.data.featured) ?? paintings[0];
 if (!hero) throw new Error('Homepage needs at least one painting in src/data/paintings.yaml');
 
 const { title, year, medium, price, status, alt, images, dimensions } = hero.data;
-const statusLabel = { available: null, sold: 'Sold', reserved: 'Reserved' }[status];
-const priceLabel = `$${price.toLocaleString('en-US')}`;
-const size = `${dimensions.height} × ${dimensions.width} in`;
+const href = `/paintings/${hero.id}/`;
 ---
 
 <Base>
-  <header class="site-header fade-in">
-    <a class="name" href="/">{site.name}</a>
-  </header>
+  <SiteHeader />
 
   <main class="home">
     <figure class="hero fade-in" style="--delay: 0.2s">
-      <Picture
+      <a href={href} tabindex="-1" aria-hidden="true"><Picture
         src={images.main}
         alt={alt}
         formats={['avif', 'webp']}
@@ -30,13 +28,13 @@ const size = `${dimensions.height} × ${dimensions.width} in`;
         sizes="(min-width: 64rem) 56rem, calc(100vw - 2rem)"
         loading="eager"
         fetchpriority="high"
-      />
+      /></a>
       <figcaption>
-        <span class="title">{title}</span>, {year}{' '}
+        <a class="title" href={href}>{title}</a>, {year}{' '}
         <span class="sep" aria-hidden="true">·</span>{' '}
-        {medium}, <span class="nowrap">{size}</span>{' '}
+        {medium}, <span class="nowrap">{formatSize(dimensions)}</span>{' '}
         <span class="sep" aria-hidden="true">·</span>{' '}
-        <span class="nowrap">{statusLabel ?? priceLabel}</span>
+        <span class="nowrap">{formatPrice(price)}{status !== 'available' && `, ${statusLabel[status]}`}</span>
       </figcaption>
     </figure>
 
@@ -49,19 +47,6 @@ const size = `${dimensions.height} × ${dimensions.width} in`;
 </Base>
 
 <style>
-  .site-header {
-    padding: var(--space-3) var(--gutter);
-    text-align: center;
-  }
-
-  .name {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: 1.5rem;
-    letter-spacing: 0.04em;
-    text-decoration: none;
-  }
-
   .home {
     padding: 0 var(--gutter) var(--space-5);
   }
@@ -96,6 +81,8 @@ const size = `${dimensions.height} × ${dimensions.width} in`;
   .title {
     font-style: italic;
     color: var(--text);
+    text-decoration-color: var(--rule);
+    text-underline-offset: 0.2em;
   }
 
   .sep {
@@ -135,10 +122,6 @@ const size = `${dimensions.height} × ${dimensions.width} in`;
   }
 
   @media (min-width: 48rem) {
-    .name {
-      font-size: 1.75rem;
-    }
-
     .line {
       font-size: 1.875rem;
     }

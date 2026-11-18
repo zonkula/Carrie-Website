@@ -1,0 +1,39 @@
+---
+import { site } from '../site.config';
+---
+
+<header class="site-header fade-in">
+  <a class="name" href="/">{site.name}</a>
+</header>
+
+<style>
+  /* Wordmark + hairline: reads as the site's logo, distinct from serif page titles. */
+  .site-header {
+    margin-bottom: var(--space-3);
+    padding: var(--space-3) var(--gutter);
+    border-bottom: 1px solid var(--rule);
+    text-align: center;
+  }
+
+  .name {
+    display: inline-block;
+    padding: 0.25rem 0; /* comfortable tap target */
+    font-family: var(--font-ui);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    letter-spacing: 0.32em;
+    margin-right: -0.32em; /* cancel the trailing letter-space so it stays centred */
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  @media (min-width: 48rem) {
+    .site-header {
+      padding-block: var(--space-4) var(--space-3);
+    }
+
+    .name {
+      font-size: 1rem;
+    }
+  }
+</style>
