@@ -1,0 +1,17 @@
+# Series / collections shown in the gallery.
+# PLACEHOLDER content: replace with her real series and intros.
+#
+# id:     URL slug (lowercase, hyphens), referenced by `series:` in paintings.yaml
+# title:  display name
+# intro:  a short paragraph that opens the series page, in her voice
+# order:  gallery order, lowest first
+
+- id: placeholder-series-one
+  title: "Placeholder Series One"
+  intro: "PLACEHOLDER: two or three sentences introducing this body of work."
+  order: 1
+
+- id: placeholder-series-two
+  title: "Placeholder Series Two"
+  intro: "PLACEHOLDER: two or three sentences introducing this body of work."
+  order: 2

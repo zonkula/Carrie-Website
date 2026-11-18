@@ -1,0 +1,76 @@
+# Paintings: one entry per original.
+# PLACEHOLDER entries below: replace with her real work, then delete these.
+#
+# id:          URL slug (lowercase, hyphens). Put images in src/assets/paintings/<id>/
+# title, year, medium
+# dimensions:  width / height (/ depth) in inches
+# series:      id from series.yaml
+# framed:      true or false; optional `frame` describes it
+# note:        short note on the piece, in her voice
+# alt:         describe the painting for screen readers and search
+# price:       whole US dollars, always shown
+# status:      available | sold | reserved
+# featured:    true to include in the home page hero rotation
+# images:      main (required), closeups (up to 2), rooms (room mockups)
+# checkout:    Stripe Payment Link for the original (add once Stripe is set up)
+# prints:      optional. edition: open | limited (limited needs editionSize)
+#              options: list of { size, paper, price, checkout }
+
+- id: placeholder-painting-one
+  title: "Placeholder Painting One"
+  year: 2026
+  medium: "Oil on canvas"
+  dimensions: { width: 24, height: 30, depth: 1.5 }
+  series: placeholder-series-one
+  framed: false
+  note: "PLACEHOLDER: a sentence or two about this piece."
+  alt: "PLACEHOLDER: describe what the painting shows."
+  price: 1200
+  status: available
+  featured: true
+  images:
+    main: ../assets/paintings/placeholder-painting-one/main.jpg
+    closeups:
+      - ../assets/paintings/placeholder-painting-one/closeup-1.jpg
+    rooms:
+      - ../assets/paintings/placeholder-painting-one/room-1.jpg
+  prints:
+    edition: limited
+    editionSize: 50
+    options:
+      - { size: "11x14", paper: "Placeholder fine art paper", price: 65 }
+      - { size: "16x20", paper: "Placeholder fine art paper", price: 110 }
+
+- id: placeholder-painting-two
+  title: "Placeholder Painting Two"
+  year: 2025
+  medium: "Acrylic on panel"
+  dimensions: { width: 12, height: 12 }
+  series: placeholder-series-one
+  framed: true
+  frame: "PLACEHOLDER: frame description"
+  note: "PLACEHOLDER: a sentence or two about this piece."
+  alt: "PLACEHOLDER: describe what the painting shows."
+  price: 450
+  status: sold
+  images:
+    main: ../assets/paintings/placeholder-painting-two/main.jpg
+
+- id: placeholder-painting-three
+  title: "Placeholder Painting Three"
+  year: 2026
+  medium: "Oil on linen"
+  dimensions: { width: 36, height: 48, depth: 1.5 }
+  series: placeholder-series-two
+  framed: false
+  note: "PLACEHOLDER: a sentence or two about this piece."
+  alt: "PLACEHOLDER: describe what the painting shows."
+  price: 2800
+  status: reserved
+  featured: true
+  images:
+    main: ../assets/paintings/placeholder-painting-three/main.jpg
+  prints:
+    edition: open
+    options:
+      - { size: "8x10", paper: "Placeholder fine art paper", price: 40 }
