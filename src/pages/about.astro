@@ -1,0 +1,145 @@
+---
+import { Picture } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import portrait from '../assets/site/portrait.jpg';
+import * as bio from '../content/bio.md';
+import { Content as Statement } from '../content/statement.md';
+import { site } from '../site.config';
+---
+
+<Base title="About" description={`About ${site.name}: biography and artist statement.`}>
+  <SiteHeader />
+
+  <main class="about">
+    <figure class="portrait fade-in" style="--delay: 0.15s">
+      <Picture
+        src={portrait}
+        alt={bio.frontmatter.photoAlt}
+        formats={['avif', 'webp']}
+        widths={[480, 800, 1200].filter((w) => w <= portrait.width)}
+        sizes="(min-width: 64rem) 40vw, calc(100vw - 2rem)"
+        loading="eager"
+      />
+    </figure>
+
+    <div class="text fade-in" style="--delay: 0.5s">
+      <h1>About</h1>
+      <div class="prose bio">
+        <bio.Content />
+      </div>
+
+      <h2>Artist statement</h2>
+      <div class="prose statement">
+        <Statement />
+      </div>
+
+      <p class="more">
+        <a href="/gallery/">View the gallery</a>
+        <a href="/contact/">Contact and commissions</a>
+      </p>
+    </div>
+  </main>
+</Base>
+
+<style>
+  .about {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 var(--gutter) var(--space-5);
+  }
+
+  .portrait {
+    margin: 0 auto;
+    max-width: 30rem;
+  }
+
+  .portrait :global(img) {
+    width: 100%;
+  }
+
+  .text {
+    max-width: 34rem;
+    margin: var(--space-4) auto 0;
+  }
+
+  h1,
+  h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 500;
+    line-height: 1.15;
+  }
+
+  h1 {
+    font-size: 2.25rem;
+  }
+
+  h2 {
+    margin-top: var(--space-5);
+    font-size: 1.75rem;
+  }
+
+  .prose {
+    margin-top: var(--space-3);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+
+  .prose :global(p) {
+    margin: 0 0 1.1em;
+    text-wrap: pretty;
+  }
+
+  /* The statement is in her voice: set it in the display serif, slightly larger. */
+  .statement {
+    font-family: var(--font-display);
+    font-size: 1.3125rem;
+    line-height: 1.55;
+  }
+
+  .more {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-4);
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--rule);
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .more a {
+    display: inline-block;
+    padding: 0.5rem 0;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  /* Wide screens: photo left (stays in view), text right. */
+  @media (min-width: 64rem) {
+    .about {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      gap: var(--space-5);
+      align-items: start;
+      padding-top: var(--space-2);
+    }
+
+    .portrait {
+      position: sticky;
+      top: var(--space-4);
+      max-width: none;
+    }
+
+    .text {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 2.75rem;
+    }
+  }
+</style>

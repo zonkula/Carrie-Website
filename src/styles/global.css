@@ -42,7 +42,11 @@ html {
   text-size-adjust: 100%;
 }
 
+/* Column layout so the footer sits at the bottom of short pages. */
 body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
   margin: 0;
   background: var(--bg);
   color: var(--text);
@@ -50,6 +54,12 @@ body {
   font-size: 1rem;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Each page's <main> fills the space between header and footer. */
+body > main {
+  flex: 1 0 auto;
+  width: 100%;
 }
 
 img {
@@ -65,6 +75,41 @@ a {
 :focus-visible {
   outline: 1px solid var(--text);
   outline-offset: 4px;
+}
+
+/*
+  Painting grid (gallery, shop): 1 column on phones, 2 on tablets, 3 on desktop.
+  Flex rather than CSS grid so a short last row is centred, like a hang on a wall.
+  Use as <ul class="painting-grid"><li><PaintingCard /></li></ul>.
+*/
+.painting-grid {
+  --gap: var(--space-4);
+  --cols: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-5) var(--gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.painting-grid > li {
+  flex: 0 0 calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
+  min-width: 0;
+}
+
+@media (min-width: 40rem) {
+  .painting-grid {
+    --cols: 2;
+  }
+}
+
+@media (min-width: 64rem) {
+  .painting-grid {
+    --cols: 3;
+    --gap: var(--space-5);
+  }
 }
 
 /* Slow fade-in. Add .fade-in to an element; --delay staggers it. */

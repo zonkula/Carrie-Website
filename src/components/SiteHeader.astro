@@ -1,24 +1,52 @@
 ---
 import { site } from '../site.config';
+
+// Painting pages belong to the Gallery section, so Gallery is marked current there.
+const links = [
+  { href: '/gallery/', label: 'Gallery', match: ['/gallery', '/paintings'] },
+  { href: '/shop/', label: 'Shop', match: ['/shop'] },
+  { href: '/about/', label: 'About', match: ['/about'] },
+  { href: '/contact/', label: 'Contact', match: ['/contact'] },
+];
+const path = Astro.url.pathname;
+const isCurrent = (match: string[]) => match.some((m) => path === m || path.startsWith(`${m}/`));
 ---
 
 <header class="site-header fade-in">
   <a class="name" href="/">{site.name}</a>
+  <nav aria-label="Main">
+    <ul>
+      {
+        links.map(({ href, label, match }) => (
+          <li>
+            <a href={href} aria-current={isCurrent(match) ? 'page' : undefined}>
+              {label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
 </header>
 
 <style>
-  /* Wordmark + hairline: reads as the site's logo, distinct from serif page titles. */
+  /*
+    Wordmark + hairline, with the menu always visible (no hamburger).
+    Phones: wordmark centred, menu centred below. Wider screens: wordmark left, menu right.
+  */
   .site-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
     margin-bottom: var(--space-3);
-    padding: var(--space-3) var(--gutter);
+    padding: var(--space-3) var(--gutter) var(--space-2);
     border-bottom: 1px solid var(--rule);
-    text-align: center;
   }
 
   .name {
     display: inline-block;
     padding: 0.25rem 0; /* comfortable tap target */
-    font-family: var(--font-ui);
     font-weight: 500;
     font-size: 0.9375rem;
     letter-spacing: 0.32em;
@@ -27,13 +55,52 @@ import { site } from '../site.config';
     text-decoration: none;
   }
 
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  nav a {
+    display: inline-block;
+    padding: 0.6rem 0; /* 44px-ish tap target */
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.5em;
+    text-decoration-thickness: 1px;
+    color: var(--muted);
+    transition: color 0.6s var(--ease), text-decoration-color 0.6s var(--ease);
+  }
+
+  nav a:hover {
+    color: var(--text);
+  }
+
+  nav a[aria-current='page'] {
+    color: var(--text);
+    text-decoration-color: currentColor;
+  }
+
   @media (min-width: 48rem) {
     .site-header {
-      padding-block: var(--space-4) var(--space-3);
+      flex-direction: row;
+      justify-content: space-between;
+      padding-block: var(--space-3);
     }
 
     .name {
       font-size: 1rem;
+    }
+
+    ul {
+      gap: 0 var(--space-4);
     }
   }
 </style>

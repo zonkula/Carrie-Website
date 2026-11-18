@@ -3,14 +3,17 @@ import '@fontsource/cormorant-garamond/latin-400.css';
 import '@fontsource/cormorant-garamond/latin-500.css';
 import '@fontsource-variable/inter/wght.css';
 import '../styles/global.css';
+import SiteFooter from '../components/SiteFooter.astro';
 import { site } from '../site.config';
 
 interface Props {
   title?: string;
   description?: string;
+  /** Show the email signup in the footer (default true). */
+  footerSignup?: boolean;
 }
 
-const { title, description = site.description } = Astro.props;
+const { title, description = site.description, footerSignup = true } = Astro.props;
 const pageTitle = title ? `${title} | ${site.name}` : site.name;
 ---
 
@@ -26,5 +29,6 @@ const pageTitle = title ? `${title} | ${site.name}` : site.name;
   </head>
   <body>
     <slot />
+    <SiteFooter signup={footerSignup} />
   </body>
 </html>

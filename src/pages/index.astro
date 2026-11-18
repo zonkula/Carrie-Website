@@ -41,7 +41,8 @@ const href = `/paintings/${hero.id}/`;
     <section class="intro fade-in" style="--delay: 0.9s">
       <h1 class="visually-hidden">{site.name}</h1>
       <p class="line">{site.intro}</p>
-      <a class="cta" href="/gallery">View the gallery</a>
+      <a class="cta" href="/gallery/">View the gallery</a>
+      <p class="secondary"><a href="/shop/">or visit the shop</a></p>
     </section>
   </main>
 </Base>
@@ -60,7 +61,7 @@ const href = `/paintings/${hero.id}/`;
   /* Height leaves room for the caption, intro and link on first view. */
   .hero :global(img) {
     width: 100%;
-    max-height: max(16rem, calc(100svh - 23rem));
+    max-height: max(14rem, calc(100svh - 27rem));
     object-fit: contain;
     margin: 0 auto;
   }
@@ -114,6 +115,24 @@ const href = `/paintings/${hero.id}/`;
     text-transform: uppercase;
     text-decoration: none;
     transition: background-color 0.6s var(--ease), color 0.6s var(--ease);
+  }
+
+  .secondary {
+    margin: var(--space-1) 0 0;
+    font-size: 0.8125rem;
+  }
+
+  .secondary a {
+    display: inline-block;
+    padding: 0.5rem 0;
+    color: var(--muted);
+    text-underline-offset: 0.3em;
+    text-decoration-color: var(--rule);
+    transition: color 0.6s var(--ease);
+  }
+
+  .secondary a:hover {
+    color: var(--text);
   }
 
   .cta:hover {

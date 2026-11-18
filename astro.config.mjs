@@ -19,6 +19,11 @@ export default defineConfig({
     schema: {
       // Read at runtime from the environment or .env. Never bundled into the browser.
       STRIPE_SECRET_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // Contact form email (Resend) and mailing list (Buttondown). See src/lib/deliver.ts.
+      RESEND_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+      CONTACT_TO_EMAIL: envField.string({ context: 'server', access: 'secret', optional: true }),
+      CONTACT_FROM_EMAIL: envField.string({ context: 'server', access: 'secret', optional: true }),
+      BUTTONDOWN_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
     },
   },
 });

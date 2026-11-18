@@ -7,14 +7,27 @@ import { formatPrice, formatSize, statusLabel } from '../../lib/format';
 
 export async function getStaticPaths() {
   const paintings = await getCollection('paintings');
-  return paintings.map((painting) => ({ params: { id: painting.id }, props: { painting } }));
+  return paintings.map((painting) => {
+    // Previous / next within the same series, in paintings.yaml order.
+    const siblings = paintings.filter((p) => p.data.series.id === painting.data.series.id);
+    const i = siblings.findIndex((p) => p.id === painting.id);
+    const pick = (p?: CollectionEntry<'paintings'>) => (p ? { id: p.id, title: p.data.title } : undefined);
+    return {
+      params: { id: painting.id },
+      props: { painting, prev: pick(siblings[i - 1]), next: pick(siblings[i + 1]) },
+    };
+  });
 }
+
+type Neighbour = { id: string; title: string } | undefined;
 
 interface Props {
   painting: CollectionEntry<'paintings'>;
+  prev: Neighbour;
+  next: Neighbour;
 }
 
-const { painting } = Astro.props;
+const { painting, prev, next } = Astro.props;
 const { title, year, medium, dimensions, framed, frame, note, alt, price, status, images } = painting.data;
 const series = await getEntry(painting.data.series);
 
@@ -34,6 +47,12 @@ const widths = (max: number) => [480, 800, 1200, 1600, 2000].filter((w) => w <= 
   <SiteHeader />
 
   <main class="painting">
+    <p class="back fade-in">
+      <a href={series ? `/gallery/#${series.id}` : '/gallery/'}>
+        <span aria-hidden="true">←</span>{' '}{series ? series.data.title : 'Gallery'}
+      </a>
+    </p>
+
     <div class="notice" role="status" hidden data-checkout-notice></div>
 
     <section class="media fade-in" style="--delay: 0.15s" aria-label="Images">
@@ -94,8 +113,32 @@ const widths = (max: number) => [480, 800, 1200, 1600, 2000].filter((w) => w <= 
         {status === 'reserved' && <p class="aside">This painting is on hold for a buyer.</p>}
         {status === 'sold' && <p class="aside">This painting has found a home.</p>}
 
-        <p class="aside">Original, one of one. Includes a signed certificate of authenticity. Ships insured, with tracking.</p>
+        <p class="aside">
+          Original, one of one. Includes a signed certificate of authenticity. Ships insured, with tracking.{' '}
+          <a href="/policies/">Shipping and returns</a>
+        </p>
       </div>
+
+      {
+        (prev || next) && (
+          <nav class="pager" aria-label={series ? `More from ${series.data.title}` : 'More paintings'}>
+            {prev ? (
+              <a class="prev" href={`/paintings/${prev.id}/`} rel="prev">
+                <span class="dir">← Previous</span>
+                <span class="pager-title">{prev.title}</span>
+              </a>
+            ) : (
+              <span />
+            )}
+            {next && (
+              <a class="next" href={`/paintings/${next.id}/`} rel="next">
+                <span class="dir">Next →</span>
+                <span class="pager-title">{next.title}</span>
+              </a>
+            )}
+          </nav>
+        )
+      }
     </section>
   </main>
 
@@ -224,6 +267,72 @@ const widths = (max: number) => [480, 800, 1200, 1600, 2000].filter((w) => w <= 
     padding: 0 var(--gutter) var(--space-5);
     max-width: 90rem;
     margin: 0 auto;
+  }
+
+  /* ---------- Back to series ---------- */
+  .back {
+    grid-column: 1 / -1;
+    margin: 0 0 var(--space-2);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .back a {
+    display: inline-block;
+    padding: 0.5rem 0;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.6s var(--ease);
+  }
+
+  .back a:hover {
+    color: var(--text);
+  }
+
+  /* ---------- Previous / next in series ---------- */
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--rule);
+  }
+
+  .pager a {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.25rem 0;
+    text-decoration: none;
+  }
+
+  .pager .next {
+    grid-column: 2;
+    text-align: right;
+  }
+
+  .dir {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .pager-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.125rem;
+    line-height: 1.3;
+  }
+
+  .pager a:hover .dir {
+    color: var(--text);
+  }
+
+  .aside a {
+    color: var(--muted);
+    text-underline-offset: 0.2em;
   }
 
   /* ---------- Images ---------- */
