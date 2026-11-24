@@ -18,6 +18,8 @@ npm run build    # production build into dist/
 3. Add an entry to `src/data/paintings.yaml`. The comments at the top of that file list every field.
 4. Run `npm run dev`. If a field is missing or wrong, the error message names it.
 
+If you replace a photo with a new one of the **same file name and same pixel size**, the browser may keep showing the old one while `npm run dev` runs (local image addresses don't change when the content does). Give the new file a different name, or clear the browser's cached images. The live site isn't affected: its image addresses change whenever the content does.
+
 Series and their intros live in `src/data/series.yaml`. The schema for both files is in `src/content.config.ts`.
 
 ## Stripe (test mode)

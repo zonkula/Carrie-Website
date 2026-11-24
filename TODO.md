@@ -4,7 +4,7 @@ Everything still to do before and after launch. Add new items as they come up, t
 
 **Owner key:** **Her** = the artist decides or supplies it. **Us** = build or setup work.
 
-_Last updated: 2026-11-18_
+_Last updated: 2026-11-24_
 
 ---
 
@@ -28,7 +28,7 @@ These come from the open questions in SPEC.md. Several block work further down.
 - [ ] Her full name as it should appear in the wordmark and page titles → `src/site.config.ts` (`name`).
 - [ ] One-line homepage intro in her voice → `src/site.config.ts` (`intro`).
 - [ ] Photograph every painting per the SPEC.md photography checklist (main image, 1–2 texture close-ups).
-- [ ] Add each painting to `src/data/paintings.yaml` with images in `src/assets/paintings/<id>/`, then **delete the three placeholder paintings and their images**.
+- [ ] Add each painting to `src/data/paintings.yaml` with images in `src/assets/paintings/<id>/`, then **delete the three placeholder paintings and their images**. Their images are generated **sample paintings** (coast, still life, forest) made for the demo; they must not stay on the live site.
 - [ ] Descriptive alt text for each painting (the `alt` field).
 - [ ] Real series names and intros → `src/data/series.yaml` (delete the placeholders).
 - [ ] Choose which paintings appear on the homepage (`featured: true`; the first one is the hero).
@@ -115,3 +115,4 @@ Follows the setup order in SPEC.md.
 - [x] Vercel support (adapter, automatic site address and trusted domains) and `TESTING.md` phone checklist, committed and pushed (2026-11-18).
 - [x] Deployed to Vercel (project `carrie-website`, team OBC Consulting), auto-deploys from `main`. Live at https://carrie-website.vercel.app. All pages load, link previews pass, and Buy creates a Stripe test checkout (2026-11-18).
 - [x] Phone test (`TESTING.md`) passed on a real phone, including a full Stripe test purchase (2026-11-18).
+- [x] Grey placeholder boxes replaced with generated sample paintings (oil-on-canvas look, with close-ups for all three) and descriptive alt text, committed and pushed (2026-11-24).

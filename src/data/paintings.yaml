@@ -27,7 +27,7 @@
   series: placeholder-series-one
   framed: false
   note: "PLACEHOLDER: a sentence or two about this piece."
-  alt: "PLACEHOLDER: describe what the painting shows."
+  alt: "Sample image: loosely painted coastal scene with a pale peach sky, a band of deep teal sea edged with white surf, and sand in the foreground."
   price: 1200
   status: available
   featured: true
@@ -52,11 +52,13 @@
   framed: true
   frame: "PLACEHOLDER: frame description"
   note: "PLACEHOLDER: a sentence or two about this piece."
-  alt: "PLACEHOLDER: describe what the painting shows."
+  alt: "Sample image: abstract still life on a warm ochre ground, with a dark plum rounded form beside a small cream shape, painted in swirling strokes."
   price: 450
   status: sold
   images:
     main: ../assets/paintings/placeholder-painting-two/main.jpg
+    closeups:
+      - ../assets/paintings/placeholder-painting-two/closeup-1.jpg
 
 - id: placeholder-painting-three
   title: "Placeholder Painting Three"
@@ -66,12 +68,14 @@
   series: placeholder-series-two
   framed: false
   note: "PLACEHOLDER: a sentence or two about this piece."
-  alt: "PLACEHOLDER: describe what the painting shows."
+  alt: "Sample image: tall forest scene in deep greens, with a pale shaft of light falling diagonally through the trees, painted in vertical strokes."
   price: 2800
   status: reserved
   featured: true
   images:
     main: ../assets/paintings/placeholder-painting-three/main.jpg
+    closeups:
+      - ../assets/paintings/placeholder-painting-three/closeup-1.jpg
   prints:
     edition: open
     options:
