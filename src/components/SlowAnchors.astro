@@ -1,0 +1,71 @@
+---
+// Slow, gentle scrolling for in-page links (gallery series, shop sections, policy contents, ...).
+// The browser's built-in smooth scroll can't be slowed down, so this animates it instead.
+---
+
+<script>
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let frame = 0;
+
+  const stop = () => {
+    cancelAnimationFrame(frame);
+    frame = 0;
+  };
+
+  // Ease in and out: slow start, slow finish.
+  const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  // Where to stop so the section's heading is in view (and not under the header).
+  function landingFor(target: HTMLElement) {
+    const margin = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+    let end = target.getBoundingClientRect().top + scrollY - margin;
+    // Scrolling up brings the header back (see SiteHeader), so leave room for it.
+    const header = document.querySelector<HTMLElement>('[data-site-header]');
+    if (header && end < scrollY && end > header.offsetHeight) end -= header.offsetHeight;
+    return Math.max(0, Math.min(end, document.documentElement.scrollHeight - innerHeight));
+  }
+
+  function glideTo(target: HTMLElement) {
+    stop();
+    const start = scrollY;
+    const end = landingFor(target);
+
+    const distance = Math.abs(end - start);
+    // About a second for a typical jump; longer trips take a little longer, capped at 1.6 s.
+    const duration = Math.min(1600, 700 + distance * 0.35);
+    const t0 = performance.now();
+
+    const step = (now: number) => {
+      const t = Math.min(1, (now - t0) / duration);
+      scrollTo({ top: start + (end - start) * ease(t), behavior: 'instant' });
+      frame = t < 1 ? requestAnimationFrame(step) : 0;
+    };
+    frame = requestAnimationFrame(step);
+  }
+
+  document.addEventListener('click', (e) => {
+    const link = (e.target as Element).closest<HTMLAnchorElement>('a[href*="#"]');
+    if (!link || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const url = new URL(link.href);
+    if (url.origin !== location.origin || url.pathname !== location.pathname || !url.hash) return;
+    const target = document.getElementById(decodeURIComponent(url.hash.slice(1)));
+    if (!target) return;
+
+    e.preventDefault();
+    history.pushState(null, '', url.hash);
+    if (reduceMotion.matches) {
+      stop();
+      scrollTo({ top: landingFor(target), behavior: 'instant' });
+    } else {
+      glideTo(target);
+    }
+    // Move keyboard focus to the section without another jump.
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
+  });
+
+  // Any touch, wheel or key press during the glide hands control back to the visitor.
+  for (const type of ['wheel', 'touchstart', 'keydown', 'mousedown'] as const) {
+    addEventListener(type, () => frame && stop(), { passive: true });
+  }
+</script>

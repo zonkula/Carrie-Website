@@ -116,3 +116,6 @@ Follows the setup order in SPEC.md.
 - [x] Deployed to Vercel (project `carrie-website`, team OBC Consulting), auto-deploys from `main`. Live at https://carrie-website.vercel.app. All pages load, link previews pass, and Buy creates a Stripe test checkout (2026-11-18).
 - [x] Phone test (`TESTING.md`) passed on a real phone, including a full Stripe test purchase (2026-11-18).
 - [x] Grey placeholder boxes replaced with generated sample paintings (oil-on-canvas look, with close-ups for all three) and descriptive alt text, committed and pushed (2026-11-24).
+- [x] Header hides while scrolling down and slides back as soon as you scroll up, anywhere on the page. Pinned panels (painting details, About portrait) move down to make room for it (2026-11-24).
+- [x] Slower, eased scrolling for in-page links (gallery series, shop sections, policy contents, email signup): about 1–1.6 s, stops if the visitor scrolls, instant with Reduce Motion (2026-11-24).
+- [x] Hide-on-scroll header and slower in-page scrolling committed and pushed (2026-11-24).

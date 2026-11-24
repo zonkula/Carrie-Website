@@ -12,7 +12,7 @@ const path = Astro.url.pathname;
 const isCurrent = (match: string[]) => match.some((m) => path === m || path.startsWith(`${m}/`));
 ---
 
-<header class="site-header fade-in">
+<header class="site-header fade-in" data-site-header>
   <a class="name" href="/">{site.name}</a>
   <nav aria-label="Main">
     <ul>
@@ -29,6 +29,64 @@ const isCurrent = (match: string[]) => match.some((m) => path === m || path.star
   </nav>
 </header>
 
+<script>
+  /*
+    Hide-on-scroll header: slides away while scrolling down, slides back as soon as the
+    visitor scrolls up, wherever they are on the page. Always shown near the top, and
+    never hidden while keyboard focus is inside it.
+
+    Also sets --header-space on <html>: the header's height while it is shown over the
+    page (0 otherwise), so sticky elements can sit below it.
+  */
+  const header = document.querySelector<HTMLElement>('[data-site-header]');
+  if (header) {
+    const root = document.documentElement;
+    const THRESHOLD = 8; // px of scroll before reacting, so a resting thumb doesn't flicker it
+    let lastY = scrollY;
+    let hidden = false;
+    let queued = false;
+
+    const set = (hide: boolean) => {
+      const overlapping = scrollY > header.offsetHeight;
+      root.style.setProperty('--header-space', !hide && overlapping ? `${header.offsetHeight}px` : '0px');
+      if (hide === hidden) return;
+      hidden = hide;
+      header.toggleAttribute('data-hidden', hide);
+    };
+
+    const update = () => {
+      queued = false;
+      const y = scrollY;
+      const atBottom = y + innerHeight >= root.scrollHeight - 2; // ignore iOS bounce at the end
+      if (y <= header.offsetHeight || header.contains(document.activeElement)) {
+        set(false);
+        lastY = y;
+      } else if (y > lastY + THRESHOLD) {
+        set(true);
+        lastY = y;
+      } else if (y < lastY - THRESHOLD && !atBottom) {
+        set(false);
+        lastY = y;
+      } else {
+        set(hidden); // keep --header-space current
+      }
+    };
+
+    addEventListener(
+      'scroll',
+      () => {
+        if (!queued) {
+          queued = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+    header.addEventListener('focusin', () => set(false));
+    update();
+  }
+</script>
+
 <style>
   /*
     Wordmark + hairline, with the menu always visible (no hamburger).
@@ -42,6 +100,23 @@ const isCurrent = (match: string[]) => match.some((m) => path === m || path.star
     margin-bottom: var(--space-3);
     padding: var(--space-3) var(--gutter) var(--space-2);
     border-bottom: 1px solid var(--rule);
+
+    /* Stays at the top of the screen; slides out of view while scrolling down. */
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--bg);
+    transition: transform 0.45s var(--ease);
+  }
+
+  .site-header[data-hidden] {
+    transform: translateY(-100%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-header {
+      transition: none;
+    }
   }
 
   .name {

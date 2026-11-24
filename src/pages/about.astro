@@ -130,7 +130,9 @@ import { site } from '../site.config';
 
     .portrait {
       position: sticky;
-      top: var(--space-4);
+      /* Sits below the header when it slides back in (see SiteHeader). */
+      top: calc(var(--header-space, 0px) + var(--space-4));
+      transition: top 0.45s var(--ease);
       max-width: none;
     }
 

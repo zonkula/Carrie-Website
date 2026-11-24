@@ -5,6 +5,7 @@ import '@fontsource-variable/inter/wght.css';
 import '../styles/global.css';
 import { getCollection } from 'astro:content';
 import SiteFooter from '../components/SiteFooter.astro';
+import SlowAnchors from '../components/SlowAnchors.astro';
 import { site } from '../site.config';
 import { formatPrice } from '../lib/format';
 import { SHARE_IMAGE, shareImagePath } from '../lib/share';
@@ -97,5 +98,6 @@ const imageUrl = new URL(shareImagePath(share.paintingId), base).href;
   <body>
     <slot />
     <SiteFooter signup={footerSignup} />
+    <SlowAnchors />
   </body>
 </html>

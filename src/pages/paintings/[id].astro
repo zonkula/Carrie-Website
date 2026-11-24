@@ -575,7 +575,9 @@ const widths = (max: number) => [480, 800, 1200, 1600, 2000].filter((w) => w <= 
 
     .details {
       position: sticky;
-      top: var(--space-4);
+      /* Sits below the header when it slides back in (see SiteHeader). */
+      top: calc(var(--header-space, 0px) + var(--space-4));
+      transition: top 0.45s var(--ease);
       margin: 0;
     }
 
