@@ -27,14 +27,12 @@
   series: placeholder-series-one
   framed: false
   note: "PLACEHOLDER: a sentence or two about this piece."
-  alt: "Sample image: loosely painted coastal scene with a pale peach sky, a band of deep teal sea edged with white surf, and sand in the foreground."
+  alt: "Black-and-white painting of Jesus in the crown of thorns, gazing upward with a tear on his cheek, his head against a weathered wooden cross. Angular shards in cream, wood brown and silver scatter across the dark upper left."
   price: 1200
   status: available
   featured: true
   images:
     main: ../assets/paintings/placeholder-painting-one/main.jpg
-    closeups:
-      - ../assets/paintings/placeholder-painting-one/closeup-1.jpg
   rooms: [living-room]
   prints:
     edition: limited

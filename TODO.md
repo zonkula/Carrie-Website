@@ -29,6 +29,7 @@ These come from the open questions in SPEC.md. Several block work further down.
 - [ ] One-line homepage intro in her voice → `src/site.config.ts` (`intro`).
 - [ ] Photograph every painting per the SPEC.md photography checklist (main image, 1–2 texture close-ups).
 - [ ] Add each painting to `src/data/paintings.yaml` with images in `src/assets/paintings/<id>/`, then **delete the three placeholder paintings and their images**. Their images are generated **sample paintings** (coast, still life, forest) made for the demo; they must not stay on the live site.
+- [ ] **Painting One now shows her real painting** (Jesus with crown of thorns), but the photo is only 516 × 640 px, so zoom and large screens look soft. Get the original phone photo (full size, not a screenshot or messaged copy), plus 1–2 texture close-ups. Also confirm its real title, size (currently 24 × 30 in), medium and price.
 - [ ] Descriptive alt text for each painting (the `alt` field).
 - [ ] Real series names and intros → `src/data/series.yaml` (delete the placeholders).
 - [ ] Choose which paintings appear on the homepage (`featured: true`; the first one is the hero).
@@ -119,3 +120,4 @@ Follows the setup order in SPEC.md.
 - [x] Header hides while scrolling down and slides back as soon as you scroll up, anywhere on the page. Pinned panels (painting details, About portrait) move down to make room for it (2026-11-24).
 - [x] Slower, eased scrolling for in-page links (gallery series, shop sections, policy contents, email signup): about 1–1.6 s, stops if the visitor scrolls, instant with Reduce Motion (2026-11-24).
 - [x] Hide-on-scroll header and slower in-page scrolling committed and pushed (2026-11-24).
+- [x] Painting One's sample image replaced with a photo of her real painting, with new alt text. Its sample close-up was removed (2026-11-24).
